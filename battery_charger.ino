@@ -36,38 +36,48 @@ void setup() {
   pinMode(A1, INPUT);
   pinMode(A2, INPUT);
   pinMode(3, OUTPUT);
+  digitalWrite(3,1);
 
 }
 
 void loop() {
+
+
+  
   getTemperature();
   getVoltCorrent();
   int a = analogRead(A1);
   int b = analogRead(A2);
   int c = a - b;
 
-  String secondLine="V:"+ String(voltage)+" I:"+String(currentValue);
-  String thirdLine="T:"+ String(temperature);
+  String secondLine="V:"+ String(voltage)+" I:"+String(abs(currentValue));
+  String thirdLine="T:"+ String(temperature<0?0:temperature);
 
   int charg=getPercent();
   String charge=charg<0?"0":String(charg);
 
   if (c < polerityLimit * -1)
     dis("Wrong polarity!", secondLine,thirdLine,"Charge: "+charge+"%");
-  else if (c > polerityLimit)
-    dis("Battery detection!", secondLine,thirdLine,"Charge: "+charge+"%");
-  else
-    dis("Not connected!", secondLine,thirdLine,"Charge: "+charge+"%");
+  else if (c > polerityLimit){
+     dis("Battery detection!", secondLine,thirdLine,"Charge: "+charge+"%");
+     //digitalWrite(3, 1);
+  }
+   
+  else{
+     dis("Not connected!", secondLine,thirdLine,"Charge: "+charge+"%");
+     //digitalWrite(3, 0);
+  }
+   
 
   // Serial.println("A1: "+String(a)+" | A2: "+String(voltage)+"   |   Sub: "+(a-b>0?"Right polerity":"Wrong polerity!"));
 
-
-  if (temperature < tempLimit && (voltage>=chargeLimit[0][0] && voltage<=chargeLimit[0][1]) || (voltage>=chargeLimit[1][0] && voltage<=chargeLimit[1][1]))
+//&& (voltage>=chargeLimit[0][0] && voltage<=chargeLimit[0][1]) || (voltage>=chargeLimit[1][0] && voltage<=chargeLimit[1][1])
+ if ((temperature < tempLimit)  && (temperature>0) && (c > polerityLimit) )
     digitalWrite(3, 0);
   else
     digitalWrite(3, 1);
 
-  delay(100);
+  delay(300);
 
 }
 
@@ -77,7 +87,7 @@ void getTemperature() {
 }
 
 void dis(String a, String b, String c, String d) {
-  Serial.println(a + "\t" + b + "\t" + c + "\t" + d + "\tCurrent: " + String(currentValue));
+  Serial.println(a + "\t" + temperature + "\t" + c + "\t" + d + "\tCurrent: " + String(currentValue));
   lcd.clear();
 
   lcd.setCursor(0, 0); // set cursor to 1 symbol of 1 line
